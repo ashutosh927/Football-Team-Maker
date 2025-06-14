@@ -11,7 +11,7 @@
       background-color: #f0f2f5;
     }
     .container {
-      max-width: 600px;
+      max-width: 800px;
       margin: auto;
       background-color: #fff;
       padding: 2rem;
@@ -36,11 +36,21 @@
     li {
       margin-bottom: 0.5rem;
     }
+    .player-list label {
+      display: block;
+      margin-bottom: 0.25rem;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Balanced Football Teams</h1>
+
+    <h2>Select Players</h2>
+    <form id="playerForm" class="player-list">
+      <!-- Player checkboxes will be generated here -->
+    </form>
+
     <button onclick="generateTeams()">Generate Teams</button>
 
     <h2>Team A</h2>
@@ -72,26 +82,44 @@
       { name: "Dikshant", role: "defender", skill: 3.5 }
     ];
 
-    function generateTeams() {
-      const shuffled = [...players].sort(() => 0.5 - Math.random());
-      const mid = Math.floor(shuffled.length / 2);
-      let teamA = shuffled.slice(0, mid);
-      let teamB = shuffled.slice(mid);
-      let extra = [];
+    const form = document.getElementById("playerForm");
 
-      if (shuffled.length % 2 !== 0) {
-        extra = teamB.splice(-1);
+    // Populate the form with checkboxes
+    players.forEach((p, i) => {
+      const label = document.createElement("label");
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.name = "player";
+      checkbox.value = i;
+      label.appendChild(checkbox);
+      label.append(` ${p.name} (${p.role})`);
+      form.appendChild(label);
+    });
+
+    function generateTeams() {
+      const selected = Array.from(document.querySelectorAll('input[name="player"]:checked'))
+        .map(cb => players[parseInt(cb.value)]);
+
+      const sorted = selected.sort((a, b) => b.skill - a.skill);
+      const teamA = [], teamB = [];
+
+      sorted.forEach((p, i) => {
+        if (teamA.length <= teamB.length) {
+          teamA.push(p);
+        } else {
+          teamB.push(p);
+        }
+      });
+
+      let extra = [];
+      if ((teamA.length + teamB.length) % 2 !== 0) {
+        if (teamA.length > teamB.length) extra = [teamA.pop()];
+        else extra = [teamB.pop()];
       }
 
-      document.getElementById("teamA").innerHTML = teamA
-        .map((p) => `<li>${p.name} (${p.role})</li>`)
-        .join("");
-      document.getElementById("teamB").innerHTML = teamB
-        .map((p) => `<li>${p.name} (${p.role})</li>`)
-        .join("");
-      document.getElementById("extra").innerHTML = extra
-        .map((p) => `<li>${p.name} (${p.role})</li>`)
-        .join("");
+      document.getElementById("teamA").innerHTML = teamA.map(p => `<li>${p.name} (${p.role})</li>`).join("");
+      document.getElementById("teamB").innerHTML = teamB.map(p => `<li>${p.name} (${p.role})</li>`).join("");
+      document.getElementById("extra").innerHTML = extra.map(p => `<li>${p.name} (${p.role})</li>`).join("");
     }
   </script>
 </body>
