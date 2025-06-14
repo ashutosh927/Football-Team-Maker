@@ -125,7 +125,13 @@ if __name__ == "__main__":
     result = balance_teams(current_round_players)
 
     # Output teams
-    print("\n✅ Team A:", result['team_a'])
-    print("✅ Team B:", result['team_b'])
+    print("\n✅ Team A:")
+    for player in result['team_a']:
+        print(f"- {player.name} ({player.primary_skill})")
+
+    print("\n✅ Team B:")
+    for player in result['team_b']:
+        print(f"- {player.name} ({player.primary_skill})")
+
     if result['extra_player']:
-        print("🧝 Extra player (plays one half for each team):", result['extra_player'])
+        print("\n🧝 Extra player (plays one half for each team):", f"{result['extra_player'].name} ({result['extra_player'].primary_skill})")
