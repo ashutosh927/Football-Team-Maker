@@ -1,6 +1,5 @@
 from typing import List, Dict
 from collections import defaultdict
-import heapq
 
 class Player:
     def __init__(self, name: str, primary_skill: str, secondary_skills: List[str], skill_point: int):
@@ -72,19 +71,32 @@ def balance_teams(players: List[Player]) -> Dict[str, List[Player]]:
         'extra_player': extra_player
     }
 
+# Store all registered players
+registered_players = []
+
+def add_player(name: str, primary: str, secondary: List[str], skill_point: int):
+    registered_players.append(Player(name, primary, secondary, skill_point))
+
+def select_players_for_round(names: List[str]) -> List[Player]:
+    selected = [p for p in registered_players if p.name in names]
+    return selected
+
 # Example usage
 if __name__ == "__main__":
-    players = [
-        Player("Alice", "gk", ["defender"], 80),
-        Player("Bob", "striker", ["defender"], 85),
-        Player("Charlie", "defender", ["gk"], 75),
-        Player("Diana", "striker", ["gk"], 70),
-        Player("Ethan", "defender", ["striker"], 90),
-        Player("Fiona", "gk", ["striker"], 65),
-        Player("George", "striker", ["defender"], 60),
-    ]
+    # Register players
+    add_player("Alice", "gk", ["defender"], 4)
+    add_player("Bob", "striker", ["defender"], 5)
+    add_player("Charlie", "defender", ["gk"], 3)
+    add_player("Diana", "striker", ["gk"], 4)
+    add_player("Ethan", "defender", ["striker"], 5)
+    add_player("Fiona", "gk", ["striker"], 3)
+    add_player("George", "striker", ["defender"], 2)
 
-    result = balance_teams(players)
+    # Choose players for the round
+    current_round_names = ["Alice", "Bob", "Charlie", "Diana", "Ethan", "Fiona", "George"]
+    current_round_players = select_players_for_round(current_round_names)
+
+    result = balance_teams(current_round_players)
     print("Team A:", result['team_a'])
     print("Team B:", result['team_b'])
     if result['extra_player']:
