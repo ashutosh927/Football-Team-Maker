@@ -2,7 +2,7 @@ from typing import List, Dict
 from collections import defaultdict
 
 class Player:
-    def __init__(self, name: str, primary_skill: str, secondary_skills: List[str], skill_point: int):
+    def __init__(self, name: str, primary_skill: str, secondary_skills: List[str], skill_point: float):
         self.name = name
         self.primary_skill = primary_skill
         self.secondary_skills = secondary_skills
@@ -14,55 +14,52 @@ class Player:
 
 def balance_teams(players: List[Player]) -> Dict[str, List[Player]]:
     roles = ['gk', 'defender', 'striker']
-    role_buckets = {role: [] for role in roles}
-    fallback_bucket = []
-
-    # Step 1: Categorize players by primary skill
-    for player in players:
-        if player.primary_skill in roles:
-            role_buckets[player.primary_skill].append(player)
-        else:
-            fallback_bucket.append(player)
-
-    # Step 2: Fill missing roles using secondary skills
-    for role in roles:
-        if not role_buckets[role]:
-            for p in fallback_bucket:
-                if role in p.secondary_skills:
-                    role_buckets[role].append(p)
-                    fallback_bucket.remove(p)
-                    break
-
-    # Step 3: Sort all players by skill points descending
-    sorted_players = sorted(players, key=lambda p: p.skill_point, reverse=True)
-
     team_a = []
     team_b = []
 
-    # Step 4: Assign key roles evenly first
-    for role in roles:
-        candidates = sorted(role_buckets[role], key=lambda p: p.skill_point, reverse=True)
-        for i, p in enumerate(candidates[:2]):
-            if i % 2 == 0:
-                team_a.append(p)
-            else:
-                team_b.append(p)
+    # Step 1: Sort players by skill point descending
+    sorted_players = sorted(players, key=lambda p: p.skill_point, reverse=True)
 
-    assigned_names = set(p.name for p in team_a + team_b)
-    remaining_players = [p for p in sorted_players if p.name not in assigned_names]
-
-    # Step 5: Distribute remaining players alternately
-    for i, p in enumerate(remaining_players):
+    # Step 2: Distribute players alternately to balance skill points
+    for i, player in enumerate(sorted_players):
         if len(team_a) <= len(team_b):
-            team_a.append(p)
+            team_a.append(player)
         else:
-            team_b.append(p)
+            team_b.append(player)
 
+    # Step 3: Ensure each team has at least one of each role
+    def ensure_roles(team: List[Player], fallback_team: List[Player]):
+        team_roles = {role: None for role in roles}
+        for player in team:
+            if player.primary_skill in roles and not team_roles[player.primary_skill]:
+                team_roles[player.primary_skill] = player
+
+        for role in roles:
+            if not team_roles[role]:
+                # Try to find someone in the same team with the secondary skill
+                for player in team:
+                    if role in player.secondary_skills:
+                        team_roles[role] = player
+                        break
+
+        for role in roles:
+            if not team_roles[role]:
+                # Try to borrow from fallback team
+                for player in fallback_team:
+                    if player.primary_skill == role or role in player.secondary_skills:
+                        team.append(player)
+                        fallback_team.remove(player)
+                        break
+
+    ensure_roles(team_a, team_b)
+    ensure_roles(team_b, team_a)
+
+    # Step 4: Handle odd player out
     extra_player = None
     if len(players) % 2 != 0:
         if len(team_a) > len(team_b):
             extra_player = team_a.pop()
-        else:
+        elif len(team_b) > len(team_a):
             extra_player = team_b.pop()
 
     return {
@@ -74,30 +71,49 @@ def balance_teams(players: List[Player]) -> Dict[str, List[Player]]:
 # Store all registered players
 registered_players = []
 
-def add_player(name: str, primary: str, secondary: List[str], skill_point: int):
+def add_player(name: str, primary: str, secondary: List[str], skill_point: float):
     registered_players.append(Player(name, primary, secondary, skill_point))
 
-def select_players_for_round(names: List[str]) -> List[Player]:
-    selected = [p for p in registered_players if p.name in names]
-    return selected
+def select_players_for_round() -> List[Player]:
+    print("\nRegistered players:")
+    for idx, p in enumerate(registered_players):
+        print(f"{idx + 1}. {p.name} (Primary: {p.primary_skill}, Secondary: {p.secondary_skills}, Skill: {p.skill_point})")
+
+    while True:
+        selected_indices = input("\nEnter the numbers of the players you want to select for this round (comma separated): ")
+        try:
+            indices = [int(i.strip()) - 1 for i in selected_indices.split(',')]
+            selected = [registered_players[i] for i in indices if 0 <= i < len(registered_players)]
+            if not selected:
+                raise ValueError("No valid indices provided.")
+            return selected
+        except (ValueError, IndexError):
+            print("\n❌ Invalid input. Please enter valid player numbers separated by commas.")
 
 # Example usage
 if __name__ == "__main__":
     # Register players
-    add_player("Alice", "gk", ["defender"], 4)
-    add_player("Bob", "striker", ["defender"], 5)
-    add_player("Charlie", "defender", ["gk"], 3)
-    add_player("Diana", "striker", ["gk"], 4)
-    add_player("Ethan", "defender", ["striker"], 5)
-    add_player("Fiona", "gk", ["striker"], 3)
-    add_player("George", "striker", ["defender"], 2)
+    add_player("Jai", "defender", [], 4)
+    add_player("JaiB", "attacker", [], 4)
+    add_player("Yash", "attacker", [], 4.5)
+    add_player("YashB", "defender", [], 3.5)
+    add_player("Aditya", "attacker", [], 5)
+    add_player("Lakshit", "attacker", [], 4)
+    add_player("SP", "attacker", [], 3.5)
+    add_player("Anshul", "attacker", [], 3)
+    add_player("Devi", "attacker", [], 5)
+    add_player("Sarthak", "defender", [], 3.5)
+    add_player("Ansh", "defender", [], 3)
+    add_player("Pratyaksh", "gk", [], 4)
+    add_player("Aashu", "gk", [], 3)
+    add_player("Satyam", "defender", [], 3.5)
+    add_player("Dikshant", "defender", [], 3.5)
 
-    # Choose players for the round
-    current_round_names = ["Alice", "Bob", "Charlie", "Diana", "Ethan", "Fiona", "George"]
-    current_round_players = select_players_for_round(current_round_names)
+    # Choose players for the round interactively
+    current_round_players = select_players_for_round()
 
     result = balance_teams(current_round_players)
-    print("Team A:", result['team_a'])
-    print("Team B:", result['team_b'])
+    print("\n✅ Team A:", result['team_a'])
+    print("✅ Team B:", result['team_b'])
     if result['extra_player']:
-        print("Extra player (plays one half for each team):", result['extra_player'])
+        print("🧍 Extra player (plays one half for each team):", result['extra_player'])
