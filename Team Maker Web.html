@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Football Team Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      background-color: #f0f2f5;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background-color: #fff;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      margin-top: 2rem;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+    li {
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Balanced Football Teams</h1>
+    <button onclick="generateTeams()">Generate Teams</button>
+
+    <h2>Team A</h2>
+    <ul id="teamA"></ul>
+
+    <h2>Team B</h2>
+    <ul id="teamB"></ul>
+
+    <h2>Extra Player</h2>
+    <ul id="extra"></ul>
+  </div>
+
+  <script>
+    const players = [
+      { name: "Jai", role: "defender", skill: 4 },
+      { name: "JaiB", role: "attacker", skill: 4 },
+      { name: "Yash", role: "attacker", skill: 4.5 },
+      { name: "YashB", role: "defender", skill: 3.5 },
+      { name: "Aditya", role: "attacker", skill: 5 },
+      { name: "Lakshit", role: "attacker", skill: 4 },
+      { name: "SP", role: "attacker", skill: 3.5 },
+      { name: "Anshul", role: "attacker", skill: 3 },
+      { name: "Devi", role: "attacker", skill: 5 },
+      { name: "Sarthak", role: "defender", skill: 3.5 },
+      { name: "Ansh", role: "defender", skill: 3 },
+      { name: "Pratyaksh", role: "gk", skill: 4 },
+      { name: "Aashu", role: "gk", skill: 3 },
+      { name: "Satyam", role: "defender", skill: 3.5 },
+      { name: "Dikshant", role: "defender", skill: 3.5 }
+    ];
+
+    function generateTeams() {
+      const shuffled = [...players].sort(() => 0.5 - Math.random());
+      const mid = Math.floor(shuffled.length / 2);
+      let teamA = shuffled.slice(0, mid);
+      let teamB = shuffled.slice(mid);
+      let extra = [];
+
+      if (shuffled.length % 2 !== 0) {
+        extra = teamB.splice(-1);
+      }
+
+      document.getElementById("teamA").innerHTML = teamA
+        .map((p) => `<li>${p.name} (${p.role})</li>`)
+        .join("");
+      document.getElementById("teamB").innerHTML = teamB
+        .map((p) => `<li>${p.name} (${p.role})</li>`)
+        .join("");
+      document.getElementById("extra").innerHTML = extra
+        .map((p) => `<li>${p.name} (${p.role})</li>`)
+        .join("");
+    }
+  </script>
+</body>
+</html>
